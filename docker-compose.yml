@@ -1,0 +1,37 @@
+version: "3.8"
+
+volumes:
+  kong_data: {}
+
+services:
+  kong:
+    image: kong:3.4.0-ubuntu
+    #build:
+    #  context: ./
+    volumes:
+      - ./wasm_filters/geo_ip.wasm:/geo_ip.wasm
+      - ./kong.yml:/tmp/kong-declarative-config.yml
+      - ./kong/plugins/wasm:/usr/local/lib/luarocks/rocks-5.1/kong-plugin-wasm/0.1.0-1/lua/kong/plugins/kong-plugin-wasm
+      - ./kong/plugins/wasm:/usr/local/share/lua/5.1/kong/plugins/kong-plugin-wasm
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /tmp/kong-declarative-config.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_LOG_LEVEL: debug
+      KONG_WASM: "on"
+      KONG_WASM_FILTERS_PATH: /
+      WASMTIME_BACKTRACE_DETAILS: 1
+      KONG_WASMTIME_BACKTRACE_DETAILS: 1
+      #KONG_WASM_MODULES: /wasm_filters/geo_ip.wasm
+      KONG_PLUGINS: bundled,kong-plugin-wasm
+    ports:
+      - "9000:8000"
+      - "9001:8001"
+      - "9444:8444"
+      - "9443:8443"
+    extra_hosts:
+      - "httpbin.org:44.219.212.78"
